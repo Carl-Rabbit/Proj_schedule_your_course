@@ -1,15 +1,20 @@
+import Helper.GBC;
+
 import javax.swing.*;
 import java.awt.*;
 
 public class CoursePanel extends JPanel {
 
 	public CoursePanel(int n) {
-		setLayout(new GridLayout(0 ,1));
+		setLayout(new GridBagLayout());
+
+		setBorder(BorderFactory.createEmptyBorder());
 
 		// Add buttons
 		for (int i = 0; i < n; i++) {
 			var button = new JButton("Test" + i);
-			add(button);
+			add(button, new GBC(0, i).setWeight(1, 1)
+					.setFill(GBC.BOTH).setAnchor(GBC.CENTER));
 		}
 	}
 

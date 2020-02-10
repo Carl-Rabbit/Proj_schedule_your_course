@@ -1,3 +1,5 @@
+package Helper;
+
 import java.awt.*;
 
 /**
@@ -8,7 +10,7 @@ import java.awt.*;
 public class GBC extends GridBagConstraints
 {
    /**
-    * Constructs a GBC with a given gridx and gridy position and all other grid
+    * Constructs a Helper.GBC with a given gridx and gridy position and all other grid
     * bag constraint values set to the default.
     * @param gridx the gridx position
     * @param gridy the gridy position
@@ -20,7 +22,7 @@ public class GBC extends GridBagConstraints
    }
 
    /**
-    * Constructs a GBC with given gridx, gridy, gridwidth, gridheight and all
+    * Constructs a Helper.GBC with given gridx, gridy, gridwidth, gridheight and all
     * other grid bag constraint values set to the default.
     * @param gridx the gridx position
     * @param gridy the gridy position

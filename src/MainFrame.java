@@ -1,9 +1,17 @@
+import ExcelPart.DataTable;
+import Helper.GBC;
+
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 
 public class MainFrame extends JFrame {
-	private static final int DEFAULT_WIDTH = 1200;
-	private static final int DEFAULT_HEIGHT = 800;
+	private static final int DEFAULT_WIDTH = 1440;
+	private static final int DEFAULT_HEIGHT = 880;
+
+	DataTable dataTable;
 
 	public MainFrame() {
 		setSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
@@ -16,6 +24,8 @@ public class MainFrame extends JFrame {
 
 		initMenuBar();
 		initMainPanel();
+
+		fixTable();
 	}
 
 	private void initMenuBar() {
@@ -38,12 +48,27 @@ public class MainFrame extends JFrame {
 		exitItem.setPreferredSize(ITEM_DIME);
 		fileMenu.add(exitItem);
 
-		/* About menu */
-		var aboutMenu = new JMenu("About");
-		aboutMenu.setMnemonic('A');
+		// testItem
+		var testItem = new JMenuItem(new AbstractAction("Debug") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				System.out.println(dataTable.labels[0][0].getText());
+			}
+		});
+		testItem.setPreferredSize(ITEM_DIME);
+		fileMenu.add(testItem);
+
+		/* Help menu */
+
+		var helpMenu = new JMenu("Help");
+		helpMenu.setMnemonic('H');
+
+		// aboutItem
+		var aboutItem = new JMenuItem("About");
+		helpMenu.add(aboutItem);
 
 		menuBar.add(fileMenu);
-		menuBar.add(aboutMenu);
+		menuBar.add(helpMenu);
 		setJMenuBar(menuBar);
 	}
 
@@ -52,10 +77,10 @@ public class MainFrame extends JFrame {
 		var mainPanel = new JPanel();
 		mainPanel.setLayout(new GridBagLayout());
 
-		// Excel panel
+		// Table panel
 
-		var excelPanel = new ExcelPanel();
-		mainPanel.add(excelPanel, new GBC(0, 0, 1, 2).setAnchor(GBC.CENTER)
+		dataTable = new DataTable();
+		mainPanel.add(dataTable.scrollPane, new GBC(0, 0, 1, 2).setAnchor(GBC.CENTER)
 				.setFill(GBC.BOTH).setWeight(100, 100).setInsets(20,20,20,15));
 
 		// Course part
@@ -83,9 +108,20 @@ public class MainFrame extends JFrame {
 		add(mainPanel);
 
 		// Test
-		excelPanel.setBackground(Color.BLUE);
 //		coursePanel.setBackground(Color.red);
 //		classPanel.setBackground((Color.green));
 
+	}
+
+	private void fixTable() {
+		this.addComponentListener(new ComponentAdapter() {
+			public void componentResized(ComponentEvent e) {
+				dataTable.refreshSize();
+			}
+		});
+	}
+
+	public void restoreSize() {
+		dataTable.restoreSize();
 	}
 }
