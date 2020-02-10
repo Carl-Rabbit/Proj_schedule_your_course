@@ -1,5 +1,4 @@
 # Schedule your course
-***
 
 A simple program make it easier to shecdule your courses.
 
@@ -19,7 +18,7 @@ Import a xml (not sure) with the data of courses, use a GUI interface to arrange
 ***
 
 # Schedule your course (中文)
-***
+
 一个简单的程序，可以使你更容易地安排你的课程。
 
 ## 能用它来干什么？
