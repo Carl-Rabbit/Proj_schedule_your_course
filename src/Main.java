@@ -8,7 +8,7 @@ public class Main {
 			frame.setTitle("Schedule your course");
 			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			frame.setVisible(true);
-			frame.restoreSize();
+			frame.reformat();
 		});
 	}
 }

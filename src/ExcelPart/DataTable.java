@@ -1,16 +1,18 @@
 package ExcelPart;
 
+import Helper.ActionFactory;
+import Helper.Pair;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.util.Vector;
 
 public class DataTable {
 	private static final String[] ROW_NOTE
 			= {"Time", "Mon", "Tue", "Wed", "Thu", "Fri"};
 	private static final String[] COL_NOTE
-			= {"Time", "1   2", "3   4", "5   6", "7   8", "9   10", "11"};
+			= {"Time", "2   1", "4   3", "6   5", "8   7", "10   9", "11"};
 	private static final int ROW_NUM = 7;
 	private static final int COL_NUM = 6;
 
@@ -23,19 +25,26 @@ public class DataTable {
 
 	public JScrollPane scrollPane;
 
-	public JPanel[][] panels;
-	public JLabel[][] labels;
-
 	public JTable table;
+	public CellData[][] data;
+	public Vector<Pair<Integer>> markedCells;
+	public boolean isSelected;
 
 	public DataTable() {
 		table = new JTable(ROW_NUM, COL_NUM);
-		initData();
+		data = new CellData[ROW_NUM][COL_NUM];
+		markedCells = new Vector<>();
+		isSelected = false;
+
+		initCell();
 		initTable();
 		initHead();
 
 		setActions();
-		scrollPane = getScrollPane();
+		scrollPane = new JScrollPane(table,
+				ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
+				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+		scrollPane.getVerticalScrollBar().setUnitIncrement(16);
 	}
 
 	private void initHead() {
@@ -46,17 +55,17 @@ public class DataTable {
 		/* Set table note */
 
 		for (int i = 0; i < COL_NUM; i++) {
-			var label = labels[0][i];
+			var label = data[0][i].label;
 			label.setFont(NOTE_FONT);
 			label.setText(ROW_NOTE[i]);
-			panels[0][i].setBackground(new Color(250, 250, 250));
+			data[0][i].panel.setBackground(new Color(250, 250, 250));
 		}
 
 		for (int i = 1; i < ROW_NUM; i++) {
-			var label = labels[i][0];
+			var label = data[i][0].label;
 			label.setFont(NOTE_FONT);
 			label.setText(COL_NOTE[i]);
-			panels[i][0].setBackground(new Color(250, 250, 250));
+			data[i][0].panel.setBackground(new Color(250, 250, 250));
 		}
 
 
@@ -93,15 +102,12 @@ public class DataTable {
 		table.setRowHeight(0, HEAD_HEIGHT);
 	}
 
-	private void initData() {
-		panels = new JPanel[ROW_NUM][COL_NUM];
-		labels = new JLabel[ROW_NUM][COL_NUM];
+	private void initCell() {
 
 		for (int i = 0; i < ROW_NUM; i++) {
 			for (int j = 0; j < COL_NUM; j++) {
 
 				JPanel panel = new JPanel();
-				panels[i][j] = panel;
 				panel.setLayout(new BorderLayout());
 
 				JLabel label;
@@ -120,28 +126,22 @@ public class DataTable {
 				}
 
 				panel.add(label);
-				labels[i][j] = label;
+
+				data[i][j] = new CellData(i, j, panel, label);
 			}
 		}
 	}
 
 	private void setActions() {
-		JPanel panel = panels[1][1];
-		panel.setBackground(Color.GRAY);
-		table.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mousePressed(MouseEvent e) {
-				int row = table.rowAtPoint(e.getPoint());
-				int col = table.columnAtPoint(e.getPoint());
+		table.addMouseMotionListener(ActionFactory.createTableMouseMotionAdapter(this));
+		table.addMouseListener(ActionFactory.createTableMouseAdapter(this));
 
-				if(row > 0 && col > 0) {
-					panels[row][col].setBackground(Color.RED);
-					table.repaint();
-				}
-
-//				super.mouseClicked(e);
-			}
-		});
+//		for (int i = 1; i < ROW_NUM; i++) {
+//			for (int j = 1; j < COL_NUM; j++) {
+//				var d = data[i][j];
+//				d.panel.addMouseListener(ActionFactory.createCellMouseAdapter(this, d));
+//			}
+//		}
 	}
 
 	public void restoreSize(){
@@ -173,12 +173,42 @@ public class DataTable {
 		}
 	}
 
-	private JScrollPane getScrollPane() {
-		var panel = new JScrollPane(table,
-				ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
-				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
-//		panel.setBorder(BorderFactory.createEmptyBorder());
-		return panel;
+	public void hoverCell(int i, int j) {
+//		System.out.println("Hover");
+
+		// Clear first
+		clearCellMark();
+
+		// Set
+
+		// Just one for now
+		data[i][j].setMark(CellData.IS_HOVER);
+		markedCells.add(new Pair<>(i, j));
+	}
+
+	public void selectCell(int i, int j) {
+//		System.out.println("Select");
+
+		// Clear first
+		clearCellMark();
+
+		// Set mark type
+		isSelected = true;
+
+		// Set
+
+		// Just one for now
+		data[i][j].setMark(CellData.IS_SELECTED);
+		markedCells.add(new Pair<>(i, j));
+	}
+
+	public void clearCellMark() {
+		isSelected = false;
+
+		for (Pair<Integer> p : markedCells) {
+			data[p.first][p.second].resetMark();
+		}
+		markedCells.clear();
 	}
 
 	private class MyTableModel extends DefaultTableModel {
@@ -190,7 +220,7 @@ public class DataTable {
 
 		@Override
 		public Object getValueAt(int row, int column) {
-			return panels[row][column];
+			return data[row][column].panel;
 		}
 
 		@Override

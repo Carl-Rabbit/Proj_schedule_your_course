@@ -1,28 +1,47 @@
-import Helper.GBC;
-
 import javax.swing.*;
 import java.awt.*;
 
 public class ClassPanel extends JPanel {
 
-	public ClassPanel(int n) {
-		setLayout(new GridBagLayout());
+	public static final int BUTTON_HEIGHT = 150;
 
-		setBorder(BorderFactory.createEmptyBorder());
+	private JPanel panel;       // the inner panel for vFlow layout
 
-		// Add check boxes
-		var group = new ButtonGroup();
-		for (int i = 0; i < n; i++) {
-			var checkBox = new JCheckBox("Test" + i);
-			add(checkBox, new GBC(0, i).setWeight(1, 1)
-					.setFill(GBC.BOTH).setAnchor(GBC.CENTER));
-			group.add(checkBox);
-		}
+	public JScrollPane scrollPanel;
+	public int num = 0;
+
+	public ClassPanel() {
+		// Make panel to vertical flow layout
+
+		setLayout(new BorderLayout());
+		panel = new JPanel();
+		add(panel);
+
+		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+		// init scroll panel
+		initScrollPane();
 	}
 
-	public JScrollPane getScrollPane() {
-		return new JScrollPane(this,
-				ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+	public void initClass(int n) {
+		num = n;
+
+		// Add buttons
+		for (int i = 0; i < num; i++) {
+			var button = new JButton("Test" + i);
+			button.setMaximumSize(new Dimension(getWidth(), BUTTON_HEIGHT));
+			panel.add(button);
+		}
+
+		panel.setPreferredSize(new Dimension(getWidth(), BUTTON_HEIGHT * num));
+
+	}
+
+
+	private void initScrollPane() {
+		scrollPanel = new JScrollPane(this,
+				ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
 				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		scrollPanel.getVerticalScrollBar().setUnitIncrement(16);
 	}
 }
