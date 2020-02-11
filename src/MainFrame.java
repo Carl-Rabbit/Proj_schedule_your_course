@@ -65,6 +65,7 @@ public class MainFrame extends JFrame {
 
 		// aboutItem
 		var aboutItem = new JMenuItem("About");
+		aboutItem.setPreferredSize(ITEM_DIME);
 		helpMenu.add(aboutItem);
 
 		menuBar.add(fileMenu);
