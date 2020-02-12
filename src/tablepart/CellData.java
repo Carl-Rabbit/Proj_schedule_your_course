@@ -1,4 +1,4 @@
-package ExcelPart;
+package tablepart;
 
 import javax.swing.*;
 import javax.swing.border.Border;

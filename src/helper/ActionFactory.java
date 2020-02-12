@@ -1,7 +1,7 @@
-package Helper;
+package helper;
 
-import ExcelPart.CellData;
-import ExcelPart.DataTable;
+import tablepart.CellData;
+import tablepart.DataTable;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;

@@ -1,7 +1,7 @@
-package ExcelPart;
+package tablepart;
 
-import Helper.ActionFactory;
-import Helper.Pair;
+import helper.ActionFactory;
+import helper.Pair;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;

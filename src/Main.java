@@ -1,3 +1,5 @@
+import components.MainFrame;
+
 import javax.swing.*;
 import java.awt.*;
 

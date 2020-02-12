@@ -1,6 +1,8 @@
-import ExcelPart.DataTable;
-import Helper.ActionFactory;
-import Helper.GBC;
+package components;
+
+import tablepart.DataTable;
+import helper.ActionFactory;
+import helper.GBC;
 
 import javax.swing.*;
 import java.awt.*;
