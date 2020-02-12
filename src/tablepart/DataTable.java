@@ -98,7 +98,6 @@ public class DataTable {
 
 		// Set Row
 
-		table.setRowHeight(120);
 		table.setRowHeight(0, HEAD_HEIGHT);
 	}
 
@@ -112,7 +111,7 @@ public class DataTable {
 
 				JLabel label;
 				if (i != 0 && j == 0) {
-					label = new JLabel(String.format("label[%d][%d]", i, j), JLabel.CENTER){
+					label = new JLabel("", JLabel.CENTER){
 						// Create anonymous subclass
 						@Override
 						public void paintComponent(Graphics g) {
@@ -122,7 +121,7 @@ public class DataTable {
 						}
 					};
 				} else {
-					label = new JLabel(String.format("label[%d][%d]", i, j), JLabel.CENTER);
+					label = new JLabel("", JLabel.CENTER);
 				}
 
 				panel.add(label);
@@ -135,13 +134,6 @@ public class DataTable {
 	private void setActions() {
 		table.addMouseMotionListener(ActionFactory.createTableMouseMotionAdapter(this));
 		table.addMouseListener(ActionFactory.createTableMouseAdapter(this));
-
-//		for (int i = 1; i < ROW_NUM; i++) {
-//			for (int j = 1; j < COL_NUM; j++) {
-//				var d = data[i][j];
-//				d.panel.addMouseListener(ActionFactory.createCellMouseAdapter(this, d));
-//			}
-//		}
 	}
 
 	public void restoreSize(){

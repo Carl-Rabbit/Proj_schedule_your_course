@@ -1,20 +1,29 @@
 package components;
 
-import tablepart.DataTable;
+import datamanage.MyFileManager;
 import helper.ActionFactory;
 import helper.GBC;
+import tablepart.DataTable;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.io.File;
 
 public class MainFrame extends JFrame {
 	private static final int DEFAULT_WIDTH = 1440;
-	private static final int DEFAULT_HEIGHT = 880;
+	private static final int DEFAULT_HEIGHT = 910;
 
-	DataTable dataTable;
-	CoursePanel coursePanel;
-	ClassPanel classPanel;
+	public DataTable dataTable;
+	public SubjectPanel subjectPanel;
+	public CoursePanel coursePanel;
+
+	public JFileChooser chooser;
+	public MyFileManager manager;
 
 	public MainFrame() {
 		setSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
@@ -26,10 +35,27 @@ public class MainFrame extends JFrame {
 			e.printStackTrace();
 		}
 
+		initDataHandler();
+
 		initMenuBar();
 		initMainPanel();
 
 		initActions();
+	}
+
+	private void initDataHandler() {
+		// init file chooser
+		chooser = new JFileChooser();
+
+		// accept .xlsx file
+		FileFilter filter = new FileNameExtensionFilter(
+				"Excel 2007+ files", "xlsx");
+		chooser.setFileFilter(filter);
+
+		chooser.setCurrentDirectory(new File("."));
+
+		// init file manager
+		manager = new MyFileManager();
 	}
 
 	private void initMenuBar() {
@@ -42,22 +68,22 @@ public class MainFrame extends JFrame {
 		var fileMenu = new JMenu("File");
 		fileMenu.setMnemonic('F');
 
-		// OpenItem
+		// Open item
 		var openItem = new JMenuItem(ActionFactory.createOpenAction());
 		openItem.setPreferredSize(ITEM_DIME);
 		fileMenu.add(openItem);
 
-		// Import item
-		var importItem = new JMenuItem(ActionFactory.createImportAction());
-		importItem.setPreferredSize(ITEM_DIME);
-		fileMenu.add(importItem);
+		// Load item
+		var loadItem = new JMenuItem(ActionFactory.createLoadAction(this));
+		loadItem.setPreferredSize(ITEM_DIME);
+		fileMenu.add(loadItem);
 
-		// exitItem
+		// Exit item
 		var exitItem = new JMenuItem(ActionFactory.createExitAction());
 		exitItem.setPreferredSize(ITEM_DIME);
 		fileMenu.add(exitItem);
 
-		// testItem
+		// Test item
 		var testItem = new JMenuItem(new AbstractAction("Debug") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -102,27 +128,38 @@ public class MainFrame extends JFrame {
 
 		// Course part
 
-		var courseLabel = new JLabel("Course" +
-				"                                 ");
+		var courseLabel = new JLabel("Subject" +
+				"                                ");
 		courseLabel.setFont(new Font(null, Font.PLAIN, 15));
 		mainPanel.add(courseLabel, new GBC(1, 0).setAnchor(GBC.WEST)
 				.setInsets(10, 14, 5, 0));
 
-		coursePanel = new CoursePanel();
-		mainPanel.add(coursePanel.scrollPanel, new GBC(1, 1, 1, 2).setAnchor(GBC.NORTH)
+		subjectPanel = new SubjectPanel();
+		mainPanel.add(subjectPanel.scrollPanel, new GBC(1, 1, 1, 2).setAnchor(GBC.NORTH)
 				.setFill(GBC.BOTH).setWeight(0, 100).setInsets(10));
 
 		// Class part
 
-		var classLabel = new JLabel("Class" +
-				"                                                     ");
+		var classLabel = new JLabel("Course" +
+				"                                                    ");
 		classLabel.setFont(new Font(null, Font.PLAIN, 15));
 		mainPanel.add(classLabel, new GBC(2, 0).setAnchor(GBC.WEST)
 				.setInsets(10, 14, 5, 0));
 
-		classPanel = new ClassPanel();
-		mainPanel.add(classPanel.scrollPanel, new GBC(2, 1, 1, 2).setAnchor(GBC.NORTH)
+		coursePanel = new CoursePanel();
+		mainPanel.add(coursePanel.scrollPanel, new GBC(2, 1, 1, 2).setAnchor(GBC.NORTH)
 				.setFill(GBC.BOTH).setWeight(0, 100).setInsets(10));
+
+		// Tip part
+
+		var tipLabel = new JLabel("Please load data or open a schedule.");
+		tipLabel.setFont(new Font(null, Font.PLAIN, 12));
+		var tipPanel = new JPanel();
+		tipPanel.setLayout(new BorderLayout());
+		tipPanel.add(tipLabel);
+		mainPanel.add(tipPanel, new GBC(0, 2).setAnchor(GBC.WEST)
+				.setInsets(10, 14, 5, 0));
+
 
 		add(mainPanel);
 
@@ -143,10 +180,26 @@ public class MainFrame extends JFrame {
 		});
 	}
 
-	// The function after setting visible
+	// The function runs after setting visible
 	public void reformat() {
-		coursePanel.initCourse(5);
-		classPanel.initClass(3);
 		dataTable.restoreSize();
+//		subjectPanel.initSubject(5);
+	}
+
+	// The function runs after reload data
+	public void loadData() {
+
+		manager.loadFile();
+		var subjectList = manager.subjectList;
+		subjectPanel.initSubject(subjectList.size(), this);
+
+		for (int i = 0; i < subjectList.size(); i++) {
+			var btPanel = subjectPanel.btPaneList.get(i);
+			var subjectData = subjectList.get(i);
+			btPanel.dataRefer = subjectData;
+			btPanel.setTest(subjectData.id, subjectData.subName);
+		}
+
+		subjectPanel.repaint();
 	}
 }

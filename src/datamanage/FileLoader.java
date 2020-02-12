@@ -11,11 +11,12 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class FileLoader {
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args){
 		// inner test
 		FileLoader fl = new FileLoader();
-		fl.open();
-		fl.handleFile();
+		if (fl.open()) {
+			fl.loadFile();
+		}
 	}
 
 	public String filename = "test.xlsx";
@@ -27,12 +28,18 @@ public class FileLoader {
 		this.filename = filename;
 	}
 
-	public void open() throws IOException {
-		InputStream is = new FileInputStream("test.xlsx");
-		file = new XSSFWorkbook(is);
+	public boolean open(){
+		try {
+			InputStream is = new FileInputStream(filename);
+			file = new XSSFWorkbook(is);
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
+		return true;
 	}
 
-	public void handleFile() {
+	public int loadFile() {
 		// Get each sheet
 		for (int numSheet = 0; numSheet < file.getNumberOfSheets(); numSheet++) {
 			XSSFSheet xssfSheet = file.getSheetAt(numSheet);
@@ -52,10 +59,12 @@ public class FileLoader {
 				}
 			}
 		}
+
+		return 0;
 	}
 
 	// covert the form of data
-	private static String getValue(XSSFCell xssfCell) {
+	protected static String getValue(XSSFCell xssfCell) {
 
 		if (xssfCell.getCellType() == xssfCell.CELL_TYPE_BOOLEAN) {
 			return String.valueOf(xssfCell.getBooleanCellValue());

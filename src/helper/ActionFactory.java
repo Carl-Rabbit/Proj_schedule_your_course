@@ -1,5 +1,10 @@
 package helper;
 
+import components.ButtonPanel;
+import components.MainFrame;
+import datamanage.ClassData;
+import datamanage.CourseData;
+import datamanage.SubjectData;
 import tablepart.CellData;
 import tablepart.DataTable;
 
@@ -35,17 +40,33 @@ public class ActionFactory {
 		return oa;
 	}
 
-	public static AbstractAction createImportAction() {
-		var ia = new AbstractAction("Import") {
+	public static AbstractAction createLoadAction(MainFrame parent) {
+		var chooser = parent.chooser;
+		var manager = parent.manager;
+		var la = new AbstractAction("Load") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				// show file chooser dialog
+				int result = chooser.showOpenDialog(parent);
+
+				// if image file accepted, set it as icon of the label
+				if (result == JFileChooser.APPROVE_OPTION) {
+					manager.filename = chooser.getSelectedFile().getPath();
+					if (manager.open()) {
+						parent.loadData();
+					} else {
+						JOptionPane.showConfirmDialog(parent, "Fail to load data!", "Load Failed",
+								JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+
+					}
+				}
 
 			}
 		};
-		ia.putValue(Action.MNEMONIC_KEY, (int)'I');
-		ia.putValue(Action.SHORT_DESCRIPTION, "Import xml file");
-		ia.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("ctrl I"));
-		return ia;
+		la.putValue(Action.MNEMONIC_KEY, (int)'L');
+		la.putValue(Action.SHORT_DESCRIPTION, "Load a xlsx file");
+		la.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("ctrl L"));
+		return la;
 	}
 
 	public static MouseMotionAdapter createTableMouseMotionAdapter(DataTable dt) {
@@ -129,6 +150,74 @@ public class ActionFactory {
 				System.out.println("Exited");
 				dt.clearCellMark();
 				dt.table.repaint();
+			}
+		};
+	}
+
+	public static MouseAdapter createSubjectMouseAction(MainFrame parent, ButtonPanel btPanel) {
+
+		var coursePanel = parent.coursePanel;
+
+		return  new MouseAdapter() {
+
+			@Override
+			public void mousePressed(MouseEvent e) {
+				var subjectData = (SubjectData) btPanel.dataRefer;
+				var courseList = subjectData.courseList;
+
+				coursePanel.initCourse(courseList.size());
+
+				for (int i = 0; i < courseList.size(); i++) {
+					var classBtPanel = coursePanel.btPaneList.get(i);
+					var courseData = courseList.get(i);
+					classBtPanel.setTest(courseData.subject.subName,
+							courseData.crsName,
+							courseData.teacher,
+							String.valueOf(courseData.quota),
+							courseData.getAllTimeStr());
+
+					classBtPanel.dataRefer = courseData;
+					classBtPanel.addMouseListener(ActionFactory
+							.createCourseMouseAction(parent, classBtPanel));
+				}
+
+				coursePanel.repaint();
+
+			}
+		};
+	}
+
+	public static MouseAdapter createCourseMouseAction(MainFrame parent, ButtonPanel btPanel) {
+
+		return  new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				var courseData = (CourseData) btPanel.dataRefer;
+				var subjectData = courseData.subject;
+				var data = parent.dataTable.data;
+
+				if (subjectData.selectedCourse != null) {
+					// Remove old course from table
+					for (ClassData d : subjectData.selectedCourse.classList) {
+						data[d.time][d.day].label.setText(" ");
+					}
+				}
+
+				// If clicked a selected course, do not add it again.
+				if (subjectData.selectedCourse != courseData) {
+					// Add course to the table
+					for (ClassData d : courseData.classList) {
+						data[d.time][d.day].label.setText(
+								d.course.subject.subName + d.course.crsName);
+					}
+					subjectData.selectedCourse = courseData;
+				} else {
+					subjectData.selectedCourse = null;
+				}
+
+				parent.dataTable.table.repaint();
+				btPanel.repaint();
+
 			}
 		};
 	}
