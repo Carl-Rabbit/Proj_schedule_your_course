@@ -8,7 +8,7 @@ It is not easy to schedule the courses in the university. In order to make the m
 It is terrible to do this at the web page. _Schedule your course_ app is made to solve this (~~to meet own needs~~).
 
 ## How?
-Import a xml (not sure) with the data of courses, use a GUI interface to arrange classes. There should be a table and lots of check boxes on the interface. When using, the infomations like time conflict should shown to the user visually.
+Import a xlsx (not sure) file with the data of courses, use a GUI interface to arrange classes. There should be a table and lots of check boxes on the interface. When using, the infomations like time conflict should shown to the user visually.
 
 ## Other
 * Project type: Just for personal practice.
@@ -28,7 +28,7 @@ Import a xml (not sure) with the data of courses, use a GUI interface to arrange
 这个过程如果直接在选课网页上操作，是一个很不好的体验。Schedule your course应用程序便是为了解决这个问题（~~满足自己需求~~）而生的。
 
 ## 想要得到的效果？
-导入写有课程数据的xml（暂定）文件，利用GUI界面进行排课。界面上要有一个表格和各个课程各个班级的选项。使用时，时间冲突等信息应在界面上直观地体现出来。
+导入写有课程数据的xlsx（暂定）文件，利用GUI界面进行排课。界面上要有一个表格和各个课程各个班级的选项。使用时，时间冲突等信息应在界面上直观地体现出来。
 
 ## 其他
 * 项目类型：个人练习
