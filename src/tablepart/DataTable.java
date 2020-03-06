@@ -1,5 +1,6 @@
 package tablepart;
 
+import components.CellPanel;
 import helper.ActionFactory;
 import helper.Pair;
 
@@ -9,12 +10,10 @@ import java.awt.*;
 import java.util.Vector;
 
 public class DataTable {
-	private static final String[] ROW_NOTE
-			= {"Time", "Mon", "Tue", "Wed", "Thu", "Fri"};
 	private static final String[] COL_NOTE
+			= {"Time", "Mon", "Tue", "Wed", "Thu", "Fri"};
+	private static final String[] ROW_NOTE
 			= {"Time", "2   1", "4   3", "6   5", "8   7", "10   9", "11"};
-	private static final int ROW_NUM = 7;
-	private static final int COL_NUM = 6;
 
 	private static final Font NOTE_FONT = new Font(null, Font.PLAIN, 15);
 
@@ -27,12 +26,16 @@ public class DataTable {
 
 	public JTable table;
 	public CellData[][] data;
+	public JPanel[] colNotes;
+	public JPanel[] rowNotes;
 	public Vector<Pair<Integer>> markedCells;
 	public boolean isSelected;
 
 	public DataTable() {
-		table = new JTable(ROW_NUM, COL_NUM);
-		data = new CellData[ROW_NUM][COL_NUM];
+		table = new JTable(ROW_NOTE.length, COL_NOTE.length);
+		data = new CellData[ROW_NOTE.length][COL_NOTE.length];
+		colNotes = new JPanel[COL_NOTE.length];
+		rowNotes = new JPanel[ROW_NOTE.length];
 		markedCells = new Vector<>();
 		isSelected = false;
 
@@ -54,21 +57,29 @@ public class DataTable {
 
 		/* Set table note */
 
-		for (int i = 0; i < COL_NUM; i++) {
-			var label = data[0][i].label;
-			label.setFont(NOTE_FONT);
-			label.setText(ROW_NOTE[i]);
-			data[0][i].panel.setBackground(new Color(250, 250, 250));
+		for (int i = 0; i < COL_NOTE.length; i++) {
+			JPanel panel = new JPanel();
+			panel.setLayout(new BorderLayout());
+			JLabel label = new JLabel(COL_NOTE[i], JLabel.CENTER);
+			panel.add(label);
+			colNotes[i] = panel;
 		}
 
-		for (int i = 1; i < ROW_NUM; i++) {
-			var label = data[i][0].label;
-			label.setFont(NOTE_FONT);
-			label.setText(COL_NOTE[i]);
-			data[i][0].panel.setBackground(new Color(250, 250, 250));
+		for (int i = 1; i < ROW_NOTE.length; i++) {
+			JPanel panel = new JPanel();
+			panel.setLayout(new BorderLayout());
+			JLabel label = new JLabel(ROW_NOTE[i], JLabel.CENTER){
+				// Create anonymous subclass
+				@Override
+				public void paintComponent(Graphics g) {
+					Graphics2D g2 = ( Graphics2D )g;
+					g2.rotate(-Math.PI / 2, this.getWidth() / 2.0, this.getHeight() / 2.0);
+					super.paintComponent(g2);
+				}
+			};
+			panel.add(label);
+			rowNotes[i] = panel;
 		}
-
-
 	}
 
 	private void initTable() {
@@ -76,7 +87,7 @@ public class DataTable {
 		table.setModel(new MyTableModel());
 		table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 
-		for (int i = 0; i < COL_NUM; i++) {
+		for (int i = 0; i < COL_NOTE.length; i++) {
 			var columnModel = table.getColumnModel().getColumn(i);
 			columnModel.setCellRenderer(new MyTableRenderer());
 		}
@@ -91,7 +102,7 @@ public class DataTable {
 
 		table.getColumnModel().getColumn(0).setMinWidth(55);
 		table.getColumnModel().getColumn(0).setMaxWidth(55);
-		for (int i = 1; i < COL_NUM; i++) {
+		for (int i = 1; i < COL_NOTE.length; i++) {
 			var colModel = table.getColumnModel().getColumn(i);
 			colModel.setPreferredWidth(165);
 		}
@@ -102,31 +113,11 @@ public class DataTable {
 	}
 
 	private void initCell() {
-
-		for (int i = 0; i < ROW_NUM; i++) {
-			for (int j = 0; j < COL_NUM; j++) {
-
-				JPanel panel = new JPanel();
+		for (int i = 1; i < ROW_NOTE.length; i++) {
+			for (int j = 1; j < COL_NOTE.length; j++) {
+				JPanel panel = new CellPanel();
 				panel.setLayout(new BorderLayout());
-
-				JLabel label;
-				if (i != 0 && j == 0) {
-					label = new JLabel("", JLabel.CENTER){
-						// Create anonymous subclass
-						@Override
-						public void paintComponent(Graphics g) {
-							Graphics2D g2 = ( Graphics2D )g;
-							g2.rotate(-Math.PI / 2, this.getWidth() / 2.0, this.getHeight() / 2.0);
-							super.paintComponent(g2);
-						}
-					};
-				} else {
-					label = new JLabel("", JLabel.CENTER);
-				}
-
-				panel.add(label);
-
-				data[i][j] = new CellData(i, j, panel, label);
+				data[i][j] = new CellData(i, j, panel);
 			}
 		}
 	}
@@ -150,12 +141,11 @@ public class DataTable {
 
 		int fix = 50;
 		if (height >= originHeight) {
-			table.setRowHeight((height - fix) / (ROW_NUM - 1));
-			table.setRowHeight(0, HEAD_HEIGHT);
+			table.setRowHeight((height - fix) / (ROW_NOTE.length - 1));
 		} else {
-			table.setRowHeight((originHeight - fix) / (ROW_NUM - 1));
-			table.setRowHeight(0, HEAD_HEIGHT);
+			table.setRowHeight((originHeight - fix) / (ROW_NOTE.length - 1));
 		}
+		table.setRowHeight(0, HEAD_HEIGHT);
 
 
 		if (width + 10 >= originWidth) {
@@ -165,7 +155,7 @@ public class DataTable {
 		}
 	}
 
-	public void hoverCell(int i, int j) {
+	public void hoverCell(int i, int j, Point point) {
 //		System.out.println("Hover");
 
 		// Clear first
@@ -174,11 +164,11 @@ public class DataTable {
 		// Set
 
 		// Just one for now
-		data[i][j].setMark(CellData.IS_HOVER);
+		data[i][j].setMark(point, CellData.IS_HOVER);
 		markedCells.add(new Pair<>(i, j));
 	}
 
-	public void selectCell(int i, int j) {
+	public void selectCell(int i, int j, Point point) {
 //		System.out.println("Select");
 
 		// Clear first
@@ -190,7 +180,7 @@ public class DataTable {
 		// Set
 
 		// Just one for now
-		data[i][j].setMark(CellData.IS_SELECTED);
+		data[i][j].setMark(point, CellData.IS_SELECTED);
 		markedCells.add(new Pair<>(i, j));
 	}
 
@@ -212,17 +202,19 @@ public class DataTable {
 
 		@Override
 		public Object getValueAt(int row, int column) {
+			if (row == 0) { return colNotes[column]; }
+			if (column == 0) { return rowNotes[row]; }
 			return data[row][column].panel;
 		}
 
 		@Override
 		public int getRowCount() {
-			return ROW_NUM;
+			return ROW_NOTE.length;
 		}
 
 		@Override
 		public int getColumnCount() {
-			return COL_NUM;
+			return COL_NOTE.length;
 		}
 
 		@Override

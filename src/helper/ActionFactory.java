@@ -9,6 +9,7 @@ import tablepart.CellData;
 import tablepart.DataTable;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -77,8 +78,9 @@ public class ActionFactory {
 			public void mouseMoved(MouseEvent e) {
 				if (dt.isSelected) { return; }
 
-				int row = t.rowAtPoint(e.getPoint());
-				int col = t.columnAtPoint(e.getPoint());
+				Point point = e.getPoint();
+				int row = t.rowAtPoint(point);
+				int col = t.columnAtPoint(point);
 
 				if (row > 0 && col > 0){
 
@@ -88,7 +90,7 @@ public class ActionFactory {
 					// repaint it
 					if (dt.markedCells.isEmpty()
 							|| !dt.markedCells.get(0).isSame(row, col)) {
-						dt.hoverCell(row, col);
+						dt.hoverCell(row, col, point);
 						dt.table.repaint();
 					}
 				} else {
@@ -105,8 +107,9 @@ public class ActionFactory {
 		return new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
-				int row = t.rowAtPoint(e.getPoint());
-				int col = t.columnAtPoint(e.getPoint());
+				Point point = e.getPoint();
+				int row = t.rowAtPoint(point);
+				int col = t.columnAtPoint(point);
 
 //				System.out.println(row + " " + col);
 
@@ -117,7 +120,7 @@ public class ActionFactory {
 							&& dt.markedCells.get(0).isSame(row, col)) {
 						dt.clearCellMark();
 					} else {
-						dt.selectCell(row, col);
+						dt.selectCell(row, col, point);
 					}
 
 					dt.table.repaint();
@@ -141,7 +144,7 @@ public class ActionFactory {
 			@Override
 			public void mouseEntered(MouseEvent e) {
 				System.out.println("Enter");
-				dt.hoverCell(d.x, d.y);
+				dt.hoverCell(d.x, d.y, e.getPoint());
 				dt.table.repaint();
 			}
 
@@ -199,7 +202,7 @@ public class ActionFactory {
 				if (subjectData.selectedCourse != null) {
 					// Remove old course from table
 					for (ClassData d : subjectData.selectedCourse.classList) {
-						data[d.time][d.day].label.setText(" ");
+						data[d.time][d.day].removeSubPanel(d);
 					}
 				}
 
@@ -207,8 +210,7 @@ public class ActionFactory {
 				if (subjectData.selectedCourse != courseData) {
 					// Add course to the table
 					for (ClassData d : courseData.classList) {
-						data[d.time][d.day].label.setText(
-								d.course.subject.subName + d.course.crsName);
+						data[d.time][d.day].addSubPanel(d);
 					}
 					subjectData.selectedCourse = courseData;
 				} else {
