@@ -87,7 +87,8 @@ public class MainFrame extends JFrame {
 		var testItem = new JMenuItem(new AbstractAction("Debug") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-
+				var tmp = dataTable.data[4][5].subPanelList;
+				System.out.println(tmp);
 			}
 		});
 		testItem.setPreferredSize(ITEM_DIME);

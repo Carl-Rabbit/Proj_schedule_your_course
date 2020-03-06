@@ -5,7 +5,6 @@ import components.MainFrame;
 import datamanage.ClassData;
 import datamanage.CourseData;
 import datamanage.SubjectData;
-import tablepart.CellData;
 import tablepart.DataTable;
 
 import javax.swing.*;
@@ -82,15 +81,18 @@ public class ActionFactory {
 				int row = t.rowAtPoint(point);
 				int col = t.columnAtPoint(point);
 
-				if (row > 0 && col > 0){
-
+				if (row > 0 && col > 0) {
 					// valid move action
-
-					// when no select or not the cell want to select
-					// repaint it
-					if (dt.markedCells.isEmpty()
-							|| !dt.markedCells.get(0).isSame(row, col)) {
-						dt.hoverCell(row, col, point);
+					if (dt.data[row][col].subPanelList.isEmpty()) {
+						// but the cell is empty
+						dt.clearCellMark();
+						dt.table.repaint();
+						return;
+					}
+					ClassData clsData = dt.locate(row, col, point);
+					if (clsData != null
+							&& dt.markChange(row, col, clsData)) {
+						dt.hoverCell(row, col, clsData);
 						dt.table.repaint();
 					}
 				} else {
@@ -105,52 +107,33 @@ public class ActionFactory {
 		JTable t = dt.table;
 
 		return new MouseAdapter() {
-			@Override
-			public void mousePressed(MouseEvent e) {
-				Point point = e.getPoint();
-				int row = t.rowAtPoint(point);
-				int col = t.columnAtPoint(point);
-
-//				System.out.println(row + " " + col);
-
-				if (row > 0 && col > 0) {
-
-					if (dt.isSelected
-							&& !dt.markedCells.isEmpty()
-							&& dt.markedCells.get(0).isSame(row, col)) {
-						dt.clearCellMark();
-					} else {
-						dt.selectCell(row, col, point);
-					}
-
-					dt.table.repaint();
-				}
-			}
+//			@Override
+//			public void mousePressed(MouseEvent e) {
+//				Point point = e.getPoint();
+//				int row = t.rowAtPoint(point);
+//				int col = t.columnAtPoint(point);
+//
+////				System.out.println(row + " " + col);
+//
+//				if (row > 0 && col > 0) {
+//
+//					if (dt.isSelected
+//							&& !dt.markedCells.isEmpty()
+//							&& dt.markedCells.get(0).isSame(row, col)) {
+//						dt.clearCellMark();
+//					} else {
+//						dt.selectCell(row, col, point);
+//					}
+//
+//					dt.table.repaint();
+//				}
+//			}
 
 			@Override
 			public void mouseExited(MouseEvent e) {
 
 				if (dt.isSelected) { return; }
 
-				dt.clearCellMark();
-				dt.table.repaint();
-			}
-		};
-	}
-
-	public static MouseAdapter createCellMouseAdapter(DataTable dt, CellData d) {
-
-		return new MouseAdapter() {
-			@Override
-			public void mouseEntered(MouseEvent e) {
-				System.out.println("Enter");
-				dt.hoverCell(d.x, d.y, e.getPoint());
-				dt.table.repaint();
-			}
-
-			@Override
-			public void mouseExited(MouseEvent e) {
-				System.out.println("Exited");
 				dt.clearCellMark();
 				dt.table.repaint();
 			}
@@ -206,7 +189,7 @@ public class ActionFactory {
 					}
 				}
 
-				// If clicked a selected course, do not add it again.
+				// If clicked a selected course, remove it.
 				if (subjectData.selectedCourse != courseData) {
 					// Add course to the table
 					for (ClassData d : courseData.classList) {

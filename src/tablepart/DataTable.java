@@ -1,12 +1,13 @@
 package tablepart;
 
-import components.CellPanel;
+import datamanage.ClassData;
 import helper.ActionFactory;
-import helper.Pair;
+import helper.Location;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.geom.Rectangle2D;
 import java.util.Vector;
 
 public class DataTable {
@@ -15,6 +16,7 @@ public class DataTable {
 	private static final String[] ROW_NOTE
 			= {"Time", "2   1", "4   3", "6   5", "8   7", "10   9", "11"};
 
+	private static final Color NOTE_COLOR = new Color(245, 245, 245);
 	private static final Font NOTE_FONT = new Font(null, Font.PLAIN, 15);
 
 	private static final int HEAD_HEIGHT = 30;
@@ -28,7 +30,7 @@ public class DataTable {
 	public CellData[][] data;
 	public JPanel[] colNotes;
 	public JPanel[] rowNotes;
-	public Vector<Pair<Integer>> markedCells;
+	public Vector<Location> markedCells;
 	public boolean isSelected;
 
 	public DataTable() {
@@ -60,7 +62,9 @@ public class DataTable {
 		for (int i = 0; i < COL_NOTE.length; i++) {
 			JPanel panel = new JPanel();
 			panel.setLayout(new BorderLayout());
+			panel.setBackground(NOTE_COLOR);
 			JLabel label = new JLabel(COL_NOTE[i], JLabel.CENTER);
+			label.setFont(NOTE_FONT);
 			panel.add(label);
 			colNotes[i] = panel;
 		}
@@ -68,6 +72,7 @@ public class DataTable {
 		for (int i = 1; i < ROW_NOTE.length; i++) {
 			JPanel panel = new JPanel();
 			panel.setLayout(new BorderLayout());
+			panel.setBackground(NOTE_COLOR);
 			JLabel label = new JLabel(ROW_NOTE[i], JLabel.CENTER){
 				// Create anonymous subclass
 				@Override
@@ -77,6 +82,7 @@ public class DataTable {
 					super.paintComponent(g2);
 				}
 			};
+			label.setFont(NOTE_FONT);
 			panel.add(label);
 			rowNotes[i] = panel;
 		}
@@ -115,9 +121,7 @@ public class DataTable {
 	private void initCell() {
 		for (int i = 1; i < ROW_NOTE.length; i++) {
 			for (int j = 1; j < COL_NOTE.length; j++) {
-				JPanel panel = new CellPanel();
-				panel.setLayout(new BorderLayout());
-				data[i][j] = new CellData(i, j, panel);
+				data[i][j] = new CellData(i, j);
 			}
 		}
 	}
@@ -155,40 +159,55 @@ public class DataTable {
 		}
 	}
 
-	public void hoverCell(int i, int j, Point point) {
+	public ClassData locate(int row, int col, Point point) {
+		Rectangle2D rec = table.getCellRect(row, col, false);
+		point.translate(-(int)rec.getX(), -(int)rec.getY());
+		return data[row][col].getLocateClass(point);
+	}
+
+	public boolean markChange(int row, int col, ClassData clsData) {
+		for (Location location : markedCells) {
+			if (location.isSame(row, col, clsData)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public void hoverCell(int i, int j, ClassData clsData) {
 //		System.out.println("Hover");
 
 		// Clear first
 		clearCellMark();
 
-		// Set
-
-		// Just one for now
-		data[i][j].setMark(point, CellData.IS_HOVER);
-		markedCells.add(new Pair<>(i, j));
-	}
-
-	public void selectCell(int i, int j, Point point) {
-//		System.out.println("Select");
-
-		// Clear first
-		clearCellMark();
-
-		// Set mark type
-		isSelected = true;
+		// Move the point relating to the cell
 
 		// Set
-
-		// Just one for now
-		data[i][j].setMark(point, CellData.IS_SELECTED);
-		markedCells.add(new Pair<>(i, j));
+		data[i][j].setMark(clsData, CellData.IS_HOVER, this);
+		markedCells.add(new Location(i, j, clsData));
 	}
+
+//	public void selectCell(int i, int j, Point point) {
+////		System.out.println("Select");
+//
+//		// Clear first
+//		clearCellMark();
+//
+//		// Set mark type
+//		isSelected = true;
+//
+//		// Set
+//
+//		// Just one for now
+//		data[i][j].setMark(point, CellData.IS_SELECTED);
+//		markedCells.add(new Location(i, j));
+//	}
 
 	public void clearCellMark() {
 		isSelected = false;
 
-		for (Pair<Integer> p : markedCells) {
-			data[p.first][p.second].resetMark();
+		for (Location l : markedCells) {
+			data[l.row][l.col].resetMark();
 		}
 		markedCells.clear();
 	}
